@@ -9,12 +9,21 @@ use piston::input::*;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 
+const tick_length: f64 = 0.5;
+
+#[derive(Clone)]
+#[derive(Copy)]
+enum Direction {
+    Up, Down, Left, Right
+}
 
 pub struct App {
     gl: GlGraphics,
     time: f64,
-    rotation: f64,
-    offset: f64
+    tick_time: f64,
+    x: f64,
+    y: f64,
+    direction: Direction,
 }
 
 impl App {
@@ -25,29 +34,48 @@ impl App {
         const GRAY:  [f32; 4] = [0.5, 0.5, 0.5, 1.0];
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
-        let square = rectangle::square(0.0, 0.0, 50.0);
-        let rotation = self.rotation;
-        let offset = self.offset;
-        let (x, y) = ((args.width  / 2) as f64,
-                      (args.height / 2) as f64);
+        let square = rectangle::square(0.0, 0.0, 10.0);
+        let (x, y) = (self.x, self.y);
 
         self.gl.draw(args.viewport(), |c, gl| {
-            // Clear the screen.
             clear(BLACK, gl);
 
-            let transform = c.transform.trans(x + offset, y)
-                                       .rot_rad(rotation)
-                                       .trans(-25.0, -25.0);
+            let transform = c.transform.trans(x, y)
+                                       .trans(-5.0, -5.0);
 
-            // Draw a box rotating around the middle of the screen.
             rectangle(GRAY, square, transform, gl);
         });
     }
 
     fn update(&mut self, args: &UpdateArgs) {
         self.time += args.dt;
-        self.rotation += 2.0 * args.dt;
-        self.offset = 100.0 * (self.time * 10.0).sin();
+        self.tick_time += args.dt;
+        if self.tick_time >= tick_length {
+            self.tick_time = 0.0;
+            self.tick();
+        }
+    }
+
+    fn tick(&mut self) {
+        match self.direction {
+            Direction::Up    => self.y -= 10.0,
+            Direction::Down  => self.y += 10.0,
+            Direction::Left  => self.x -= 10.0,
+            Direction::Right => self.x += 10.0,
+        }
+    }
+
+    fn key(&mut self, key_direction: Direction) {
+        let dir = self.direction;
+        let new_dir =
+            match (dir, key_direction) {
+                (Direction::Up,    Direction::Down)  => Direction::Up,
+                (Direction::Down,  Direction::Up)    => Direction::Down,
+                (Direction::Left,  Direction::Right) => Direction::Left,
+                (Direction::Right, Direction::Left)  => Direction::Right,
+                _                                    => key_direction,
+            };
+        self.direction = new_dir;
     }
 }
 
@@ -68,18 +96,22 @@ fn main() {
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        time: 0.0,
-        rotation: 0.0,
-        offset: 0.0
+        time:      0.0,
+        tick_time: 0.0,
+        x:         0.0,
+        y:         0.0,
+        direction: Direction::Right,
     };
 
     for e in window.events() {
         if let Some(Button::Keyboard(key)) = e.press_args() {
-            if key == Key::C {
-                println!("Got a C!");
+            match key {
+                Key::Up   => app.key(Direction::Up),
+                Key::Down => app.key(Direction::Down),
+                Key::Left => app.key(Direction::Left),
+                Key::Right => app.key(Direction::Right),
+                _ => ()
             }
-
-            println!("Pressed keyboard key '{:?}'", key);
         };
 
         if let Some(r) = e.render_args() {
