@@ -9,7 +9,7 @@ use piston::input::*;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 
-const tick_length: f64 = 0.5;
+const TICK_LENGTH: f64 = 0.5;
 
 #[derive(Clone)]
 #[derive(Copy)]
@@ -30,7 +30,6 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
         const GRAY:  [f32; 4] = [0.5, 0.5, 0.5, 1.0];
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
@@ -50,7 +49,7 @@ impl App {
     fn update(&mut self, args: &UpdateArgs) {
         self.time += args.dt;
         self.tick_time += args.dt;
-        if self.tick_time >= tick_length {
+        if self.tick_time >= TICK_LENGTH {
             self.tick_time = 0.0;
             self.tick();
         }
@@ -85,7 +84,7 @@ fn main() {
 
     // Create an Glutin window.
     let window: Window = WindowSettings::new(
-            "spinning-square",
+            "rusty-snake",
             [200, 200]
         )
         .opengl(opengl)

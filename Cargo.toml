@@ -1,14 +1,14 @@
 [package]
 
-name = "getting-started-spinning-square"
+name = "rusty-snake"
 version = "0.1.0"
 authors = [
-    "TyOverby <ty@pre-alpha.com>",
-    "Nikita Pekin <contact@nikitapek.in>"
+    "Eija Johansson <eija.johansson@gmail.com>",
+    "Tobias Johansson <tobias.j.e.johansson@gmail.com>"
 ]
 
 [[bin]]
-name = "spinning-square"
+name = "rusty-snake"
 
 [dependencies]
 piston = "0.16.0"
