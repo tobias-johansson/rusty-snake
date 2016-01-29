@@ -11,6 +11,7 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 
 const TICK_LENGTH: f64 = 0.5;
 
+// To be able to copy the enumeration type (not a ref) need this wierd stuff
 #[derive(Clone)]
 #[derive(Copy)]
 enum Direction {
@@ -24,6 +25,7 @@ pub struct App {
     x: f64,
     y: f64,
     direction: Direction,
+    next_direction_set: bool
 }
 
 impl App {
@@ -62,19 +64,21 @@ impl App {
             Direction::Left  => self.x -= 10.0,
             Direction::Right => self.x += 10.0,
         }
+        self.next_direction_set = false;
     }
 
     fn key(&mut self, key_direction: Direction) {
-        let dir = self.direction;
-        let new_dir =
-            match (dir, key_direction) {
-                (Direction::Up,    Direction::Down)  => Direction::Up,
-                (Direction::Down,  Direction::Up)    => Direction::Down,
-                (Direction::Left,  Direction::Right) => Direction::Left,
-                (Direction::Right, Direction::Left)  => Direction::Right,
-                _                                    => key_direction,
-            };
-        self.direction = new_dir;
+        if !self.next_direction_set {
+            self.direction =
+                match (self.direction, key_direction) {
+                    (Direction::Up,    Direction::Down)  => Direction::Up,
+                    (Direction::Down,  Direction::Up)    => Direction::Down,
+                    (Direction::Left,  Direction::Right) => Direction::Left,
+                    (Direction::Right, Direction::Left)  => Direction::Right,
+                    _                                    => key_direction,
+                };
+            self.next_direction_set = true;
+        } 
     }
 }
 
@@ -100,6 +104,7 @@ fn main() {
         x:         0.0,
         y:         0.0,
         direction: Direction::Right,
+        next_direction_set: false
     };
 
     for e in window.events() {
