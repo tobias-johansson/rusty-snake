@@ -11,6 +11,7 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 use std::vec::Vec;
 
 const TICK_LENGTH: f64 = 0.25;
+const STEP_SIZE:   f64 = 10.0;
 
 // To be able to copy the enumeration type (not a ref) need this wierd stuff
 #[derive(Clone)]
@@ -28,14 +29,14 @@ pub struct App {
 }
 
 pub struct SnakePart {
-    x: f64,
-    y: f64,
+    x: i32,
+    y: i32,
     direction: Direction,
 }
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
-        
+
         use graphics::*;
 
         const GRAY:  [f32; 4] = [0.5, 0.5, 0.5, 1.0];
@@ -49,9 +50,10 @@ impl App {
             clear(BLACK, gl);
 
             for part in parts {
-                let (x, y) = (part.x, part.y);
+                let (x, y) = (part.x as f64 * STEP_SIZE,
+                              part.y as f64 * STEP_SIZE);
                 let transform = c.transform.trans(x, y)
-                                       .trans(-5.0, -5.0);
+                                           .trans(-5.0, -5.0);
 
                 rectangle(GRAY, square, transform, gl);
             }
@@ -70,13 +72,13 @@ impl App {
     fn tick(&mut self) {
         for part in self.snake.iter_mut() {
             match part.direction {
-                Direction::Up    => part.y -= 10.0,
-                Direction::Down  => part.y += 10.0,
-                Direction::Left  => part.x -= 10.0,
-                Direction::Right => part.x += 10.0,
+                Direction::Up    => part.y -= 1,
+                Direction::Down  => part.y += 1,
+                Direction::Left  => part.x -= 1,
+                Direction::Right => part.x += 1,
             }
         }
-        // Update tail by copying the position of the snake part in front of it
+        // Update tail by copying the direction of the snake part in front of it
         let snake_length = self.snake.len();
         for i in 0..snake_length-1 {
             self.snake[i].direction = self.snake[i+1].direction;
@@ -87,7 +89,7 @@ impl App {
     fn key(&mut self, key_direction: Direction) {
         if !self.next_direction_set {
             let snake_length = self.snake.len();
-            
+
             self.snake[snake_length-1].direction =
                     match (self.snake[snake_length-1].direction, key_direction) {
                         (Direction::Up,    Direction::Down)  => Direction::Up,
@@ -97,7 +99,7 @@ impl App {
                         _                                    => key_direction,
                     };
             self.next_direction_set = true;
-        } 
+        }
     }
 }
 
@@ -121,11 +123,11 @@ fn main() {
         time:      0.0,
         tick_time: 0.0,
         snake: vec![
-                    SnakePart{x: 20.0, y: 50.0, direction: Direction::Right},
-                    SnakePart{x: 30.0, y: 50.0, direction: Direction::Right},
-                    SnakePart{x: 40.0, y: 50.0, direction: Direction::Right}, 
-                    SnakePart{x: 50.0, y: 50.0, direction: Direction::Right},
-                    SnakePart{x: 60.0, y: 50.0, direction: Direction::Right}],
+                    SnakePart{x: 2, y: 5, direction: Direction::Right},
+                    SnakePart{x: 3, y: 5, direction: Direction::Right},
+                    SnakePart{x: 4, y: 5, direction: Direction::Right},
+                    SnakePart{x: 5, y: 5, direction: Direction::Right},
+                    SnakePart{x: 6, y: 5, direction: Direction::Right}],
         next_direction_set: false
     };
 
