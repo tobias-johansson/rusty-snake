@@ -2,6 +2,7 @@ extern crate piston;
 extern crate graphics;
 extern crate glutin_window;
 extern crate opengl_graphics;
+extern crate nalgebra;
 
 use piston::window::WindowSettings;
 use piston::event_loop::*;
@@ -9,6 +10,7 @@ use piston::input::*;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 use std::vec::Vec;
+use nalgebra::{Vec4};
 
 const TICK_LENGTH: f64 = 0.25;
 const STEP_SIZE:   f64 = 10.0;
@@ -39,23 +41,36 @@ impl App {
 
         use graphics::*;
 
-        const GRAY:  [f32; 4] = [0.5, 0.5, 0.5, 1.0];
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+
+        let gray: Vec4<f32> = Vec4::new(0.5, 0.5, 0.5, 1.0);
+        let rust: Vec4<f32> = Vec4::new(0.8, 0.37, 0.14, 0.7);
 
         let square = rectangle::square(0.0, 0.0, 10.0);
 
+        let snake_length_f32 = self.snake.len() as f32;
         let parts = self.snake.iter();
 
         self.gl.draw(args.viewport(), |c, gl| {
-            clear(BLACK, gl);
+            clear(BLACK, gl);	
 
+            let mut i = 0.0;
+            let mut alpha: f32;
             for part in parts {
                 let (x, y) = (part.x as f64 * STEP_SIZE,
                               part.y as f64 * STEP_SIZE);
+                
+                // Using linear equation to transition color from gray to rust
+                alpha = i/snake_length_f32;
+                let color = gray*(1.0-alpha)+rust*alpha;
+                let color_array = [color.x, color.y, color.z, color.w];
+                
                 let transform = c.transform.trans(x, y)
                                            .trans(-5.0, -5.0);
 
-                rectangle(GRAY, square, transform, gl);
+                rectangle(color_array, square, transform, gl);
+
+                i=i+1.0;
             }
         });
     }
